@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8"/>
+  <title>Flow</title>
+  <style>
+    :root {
+      --bg: #ffffff; --bg2: #1a1a1a; --bg3: #2a2a2a;
+      --text: #000000; --text-dim: #888888;
+      --accent: #44aaff; --accent2: #ffff44;
+      --border: #333333; --success: #44ff44; --error: #ff5555;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--bg);
+      width: 100vw;
+      height: 100vh;
+      overflow: hidden;
+      -webkit-app-region: drag;
+    }
+    #mora-layer {
+      position: absolute;
+      inset: 0;
+      overflow: hidden;
+      writing-mode: vertical-rl;
+      -webkit-app-region: no-drag;
+    }
+    .mora-slot {
+      display: inline-block;
+      width: 36px;
+      height: 36px;
+      text-align: center;
+      line-height: 36px;
+      font-size: 24px;
+      color: var(--text);
+      font-family: monospace;
+    }
+    #word-layer {
+      position: absolute;
+      inset: 0;
+      overflow: hidden;
+      pointer-events: none;
+      mix-blend-mode: screen;
+    }
+    #word-display {
+      position: absolute;
+      font-size: 40px;
+      color: var(--accent);
+      font-family: monospace;
+      white-space: nowrap;
+    }
+  </style>
+</head>
+<body>
+  <div id="mora-layer"></div>
+  <div id="word-layer">
+    <div id="word-display"></div>
+  </div>
+  <script src="renderer.js"></script>
+</body>
+</html>

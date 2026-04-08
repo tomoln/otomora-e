@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <title>Text loader</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DotGothic16&family=M+PLUS+1+Code&family=Noto+Sans+JP&family=Zen+Kaku+Gothic+New&family=Dela+Gothic+One&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #111111; --bg2: #1a1a1a; --bg3: #2a2a2a;
+      --text: #cccccc; --text-dim: #888888;
+      --accent: #44aaff; --accent2: #ffff44;
+      --border: #333333; --success: #44ff44; --error: #ff5555;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'DotGothic16', monospace;
+      height: 100vh;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      -webkit-app-region: drag;
+    }
+    #menu {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 8px 12px;
+      background: var(--bg2);
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+      font-size: 0.82rem;
+      color: var(--text-dim);
+    }
+    #menu label { display: flex; align-items: center; gap: 6px; }
+    #menu select {
+      background: var(--bg3);
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 2px 6px;
+      font-size: 0.82rem;
+      -webkit-app-region: no-drag;
+    }
+    #stage { -webkit-app-region: no-drag; }
+    #stage {
+      writing-mode: vertical-rl;
+      width: 100%;
+      flex: 1;
+      overflow: hidden;
+      padding: 12px;
+    }
+    .token {
+      font-size: 1.1rem;
+      line-height: 1.8;
+      white-space: nowrap;
+    }
+    .token.word {
+      color: var(--accent);
+      font-weight: bold;
+    }
+    .token.mora {
+      color: var(--text);
+    }
+  </style>
+</head>
+<body>
+  <div id="menu">
+    <label>
+      フォント:
+      <select id="font-select">
+        <option value="'DotGothic16', monospace">DotGothic16（ドット）</option>
+        <option value="'M PLUS 1 Code', monospace">M PLUS 1 Code（等幅）</option>
+        <option value="'Noto Sans JP', sans-serif">Noto Sans JP（標準）</option>
+        <option value="'Zen Kaku Gothic New', sans-serif">Zen Kaku Gothic New（スクエア）</option>
+        <option value="'Dela Gothic One', sans-serif">Dela Gothic One（太字）</option>
+      </select>
+    </label>
+  </div>
+  <div id="stage"></div>
+  <script src="renderer.js"></script>
+</body>
+</html>

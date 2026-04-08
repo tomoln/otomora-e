@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <title>BPM</title>
+  <style>
+    :root {
+      --bg: #111111; --bg2: #1a1a1a; --bg3: #2a2a2a;
+      --text: #cccccc; --text-dim: #888888;
+      --accent: #44aaff; --accent2: #ffff44;
+      --border: #333333; --success: #44ff44; --error: #ff5555;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: monospace;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 14px;
+      -webkit-app-region: drag;
+      user-select: none;
+    }
+
+    #mode-toggle {
+      display: flex;
+      gap: 0;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      overflow: hidden;
+      -webkit-app-region: no-drag;
+    }
+    .mode-btn {
+      padding: 4px 16px;
+      background: var(--bg2);
+      color: var(--text-dim);
+      border: none;
+      font-family: monospace;
+      font-size: 0.8rem;
+      cursor: pointer;
+    }
+    .mode-btn + .mode-btn { border-left: 1px solid var(--border); }
+    .mode-btn.active { background: var(--accent); color: var(--bg); }
+
+    #controls {
+      display: flex;
+      align-items: center;
+      gap: 24px;
+      -webkit-app-region: no-drag;
+      transition: opacity 0.2s;
+    }
+    #controls.disabled { opacity: 0.35; pointer-events: none; }
+
+    .ctrl-group {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      font-size: 0.75rem;
+      color: var(--text-dim);
+    }
+    .ctrl-group input[type="range"] {
+      width: 120px;
+      accent-color: var(--accent);
+    }
+    .ctrl-group .val {
+      font-size: 1rem;
+      color: var(--text);
+      min-width: 48px;
+      text-align: center;
+    }
+
+    #play-btn {
+      padding: 6px 20px;
+      background: var(--bg3);
+      border: 1px solid var(--success);
+      border-radius: 4px;
+      color: var(--success);
+      font-size: 0.85rem;
+      cursor: pointer;
+      -webkit-app-region: no-drag;
+    }
+    #play-btn:hover { filter: brightness(1.2); }
+    #play-btn.running { border-color: var(--error); color: var(--error); }
+
+    #hand-hint {
+      font-size: 0.75rem;
+      color: var(--text-dim);
+      display: none;
+    }
+    #hand-hint.visible { display: block; }
+
+    #grid {
+      display: flex;
+      gap: 6px;
+      -webkit-app-region: no-drag;
+    }
+    .step {
+      width: 24px;
+      height: 48px;
+      border-radius: 4px;
+      background: var(--bg2);
+      border: 1px solid var(--bg3);
+      transition: background 0.05s;
+    }
+    .step.beat { border-color: var(--border); }
+    .step.active { background: var(--accent); border-color: var(--accent); }
+    .step.beat.active { background: var(--accent2); border-color: var(--accent2); }
+  </style>
+</head>
+<body>
+  <div id="mode-toggle">
+    <button class="mode-btn active" id="btn-tempo">TEMPO</button>
+    <button class="mode-btn" id="btn-hand">HAND</button>
+  </div>
+
+  <div id="controls">
+    <div class="ctrl-group">
+      <span>BPM</span>
+      <input type="range" id="bpm-slider" min="40" max="240" value="120" />
+      <span class="val" id="bpm-val">120</span>
+    </div>
+    <button id="play-btn">▶ PLAY</button>
+    <div class="ctrl-group">
+      <span>Swing %</span>
+      <input type="range" id="swing-slider" min="50" max="75" value="50" step="1" />
+      <span class="val" id="swing-val">50%</span>
+    </div>
+  </div>
+
+  <div id="hand-hint">[ a ] で1ステップ進む</div>
+  <div id="grid"></div>
+
+  <script src="renderer.js"></script>
+</body>
+</html>

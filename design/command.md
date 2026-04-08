@@ -1,0 +1,103 @@
+
+git init
+git add .
+git commit -m "initial commit"
+=======
+アプリの実行
+npm start
+
+デプロイ
+git add . 
+git commit -m "update"
+git push
+
+別の環境に、更新前のプロジェクトがある場合は
+その該当プロジェクトフォルダで
+git pull
+
+
+Build Tools 2022をインストール
+https://aka.ms/vs/17/release/vs_BuildTools.exe
+
+
+winのC/c+環境
+Visual Studio Build Tools 2022
+インストーラで以下にチェック：
+Windows ユニバーサル CRT
+C++ Build Tools コア機能
+x64/x86 用MSVC ビルドツール(最新)
+Windows 用 C++ CMake ツール
+Windows 11 SDK (10.0.22621.0)
+MSVC v143 - VS 2022 C++ x64/x86 ビルドツール
+
+node-gyp
+Node.jsでC/C++のコードをビルドするためのツール
+VS Build Tools 2026（= version 18）を認識できない
+
+node-gypに「2022として使え」と教える
+setx GYP_MSVS_VERSION 2022
+
+Node.jsのバージョン20をインストール
+nvm install 20
+
+今使うNodeを20に切り替える
+nvm use 20
+
+今までインストールされたパッケージを全部削除
+Remove-Item -Recurse -Force node_modules
+
+依存関係の固定ファイルを削除
+Remove-Item package-lock.json
+
+package.json
+で、内容が重複する部分とかを消す
+
+node_modulesはGitHubに含まれないので、
+npm install
+を再度する必要あり
+
+これの情報はどこから知れる
+npmjs.com には npm に公開されているパッケージの情報が全部ある
+  "dependencies": {
+    "abletonlink": "^0.2.0-beta.0",
+    "midi": "^2.0.0",
+    "soundtouchjs": "^0.2.3"
+
+https://www.npmjs.com/package/midi
+https://www.npmjs.com/package/abletonlink
+https://www.npmjs.com/package/soundtouchjs
+
+midi（v2.0.0）
+Build Tools 2022 からインストールした個別コンポーネントが下記のようなフォルダが認識されるのが必要っぽい
+C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools
+
+
+
+condaから外れる
+conda deactivate
+
+Github Copilotを開く
+コマンドパレット
+⌘ + Shift + P 
+Copilotと検索
+Chat: New Copilot CLI を開く
+
+electron UIでコンソールを見る
+Cmd + Option + I
+
+GridPlayer.js
+// ── タイムストレッチ ON/OFF ────────────────────────────────────────────────────
+// false にするとストレッチをスキップし、スライスをそのままの長さで再生する。
+// アプリを再起動すると反映される。
+const ENABLE_TIME_STRETCH = true;
+
+GridPlayer.js
+// ── スライス末尾フェードアウト（秒）────────────────────────────────────────────
+// 全スライスの終端にかけるフェードアウトの長さ。クリックノイズ防止用。
+// 大きくするほど滑らかに消えるが、スライスの末尾が早く消える。推奨: 0.01〜0.05
+const SLICE_FADE_OUT_SEC = 0.02;
+
+AudioEngine.js
+// アプリを再起動すると反映される。
+const MONITOR_SPEAKERS = true;
+>>>>>>> c4973a9af9d8b637264d2d747a9162bc5e72a71c
