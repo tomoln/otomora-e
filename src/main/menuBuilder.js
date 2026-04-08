@@ -78,6 +78,22 @@ function buildMenu() {
             menuItem.checked ? win8.show() : win8.hide();
           },
         },
+        { type: 'separator' },
+        {
+          role: 'toggleDevTools',
+          label: 'Toggle DevTools (focused window)',
+        },
+        {
+          label: 'Open DevTools (win8)',
+          accelerator: 'Ctrl+Shift+8',
+          click() {
+            const { win8 } = getWindows();
+            if (!win8 || win8.isDestroyed()) return;
+            if (!win8.isVisible()) win8.show();
+            win8.focus();
+            win8.webContents.openDevTools({ mode: 'detach' });
+          },
+        },
       ],
     },
     { role: 'windowMenu' },
