@@ -5,4 +5,5 @@ contextBridge.exposeInMainWorld('api', {
   onTick:     (callback) => ipcRenderer.on('bpm-tick', () => callback()),
   onStop:     (callback) => ipcRenderer.on('bpm-stop', () => callback()),
   onPalette:  (callback) => ipcRenderer.on('apply-palette', (_event, p) => callback(p)),
+  onFont:     (callback) => ipcRenderer.on('apply-font', (_event, font) => callback(font)),
 });

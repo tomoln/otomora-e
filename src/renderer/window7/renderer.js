@@ -108,3 +108,4 @@ function renderList() {
 renderList();
 // 起動時にデフォルトパレットを適用
 window.api.sendPalette(PALETTES[0]);
+window.api.onFont((font) => { document.body.style.fontFamily = font; });

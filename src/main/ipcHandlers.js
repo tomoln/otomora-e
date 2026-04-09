@@ -103,9 +103,16 @@ function registerHandlers() {
   });
 
   ipcMain.on('apply-palette', (_event, palette) => {
-    const { win1, win2, win3, win4, win5, win6 } = getWindows();
-    for (const win of [win1, win2, win3, win4, win5, win6]) {
+    const { win1, win2, win3, win4, win5, win6, win8, win9 } = getWindows();
+    for (const win of [win1, win2, win3, win4, win5, win6, win8, win9]) {
       if (win && !win.isDestroyed()) win.webContents.send('apply-palette', palette);
+    }
+  });
+
+  ipcMain.on('apply-font', (_event, font) => {
+    const { win1, win2, win3, win4, win5, win6, win7, win8 } = getWindows();
+    for (const win of [win1, win2, win3, win4, win5, win6, win7, win8]) {
+      if (win && !win.isDestroyed()) win.webContents.send('apply-font', font);
     }
   });
 }

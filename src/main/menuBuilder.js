@@ -78,6 +78,16 @@ function buildMenu() {
             menuItem.checked ? win8.show() : win8.hide();
           },
         },
+        {
+          label: 'Font (win9)',
+          type: 'checkbox',
+          checked: false,
+          click(menuItem) {
+            const { win9 } = getWindows();
+            if (!win9 || win9.isDestroyed()) return;
+            menuItem.checked ? win9.show() : win9.hide();
+          },
+        },
         { type: 'separator' },
         {
           role: 'toggleDevTools',

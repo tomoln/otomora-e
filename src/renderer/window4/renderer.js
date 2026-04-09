@@ -5,13 +5,7 @@ const INTERVAL_MS = 120;
 // =============================================
 
 const stage = document.getElementById('stage');
-const fontSelect = document.getElementById('font-select');
 let timer = null;
-
-// フォント切り替え
-fontSelect.addEventListener('change', () => {
-  stage.style.fontFamily = fontSelect.value;
-});
 
 window.api.onJsonData((jsonData) => {
   if (timer !== null) {
@@ -63,3 +57,4 @@ function applyPalette(p) {
   r.style.setProperty('--error', p.error);
 }
 window.api.onPalette(applyPalette);
+window.api.onFont((font) => { document.body.style.fontFamily = font; });

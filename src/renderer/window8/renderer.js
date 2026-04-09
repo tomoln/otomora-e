@@ -80,6 +80,7 @@ function applyPalette(p) {
   r.style.setProperty('--error', p.error);
 }
 window.api.onPalette(applyPalette);
+window.api.onFont((font) => { document.body.style.fontFamily = font; });
 
 // ============================================================
 // M2: オフスクリーン2D canvas → WebGL テクスチャ表示

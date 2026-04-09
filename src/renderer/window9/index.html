@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8" />
-  <title>Palette</title>
+  <title>Font</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=DotGothic16&family=M+PLUS+1+Code&family=Noto+Sans+JP&family=Zen+Kaku+Gothic+New&family=Dela+Gothic+One&display=swap" rel="stylesheet" />
@@ -30,7 +30,7 @@
       border-bottom: 1px solid var(--border);
       flex-shrink: 0;
     }
-    #palette-list {
+    #font-list {
       display: flex;
       flex-direction: column;
       gap: 6px;
@@ -39,34 +39,30 @@
       flex: 1;
       -webkit-app-region: no-drag;
     }
-    .palette-item {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      padding: 8px 10px;
+    .font-item {
+      padding: 10px 12px;
       border-radius: 5px;
       border: 1px solid var(--border);
       cursor: pointer;
       background: var(--bg2);
       transition: border-color 0.15s;
     }
-    .palette-item:hover { border-color: var(--accent); }
-    .palette-item.selected { border-color: var(--accent); background: var(--bg3); }
-    .palette-name { font-size: 0.82rem; flex: 1; }
-    .swatches {
-      display: flex;
-      gap: 3px;
+    .font-item:hover { border-color: var(--accent); }
+    .font-item.selected { border-color: var(--accent); background: var(--bg3); }
+    .font-name {
+      font-size: 0.75rem;
+      color: var(--text-dim);
+      margin-bottom: 4px;
     }
-    .swatch {
-      width: 14px;
-      height: 14px;
-      border-radius: 3px;
+    .font-preview {
+      font-size: 1.1rem;
+      color: var(--text);
     }
   </style>
 </head>
 <body>
-  <h2>COLOR PALETTE</h2>
-  <div id="palette-list"></div>
+  <h2>FONT</h2>
+  <div id="font-list"></div>
   <script src="renderer.js"></script>
 </body>
 </html>

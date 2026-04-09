@@ -1,7 +1,7 @@
 const { app, BrowserWindow } = require('electron');
 const path = require('path');
 
-let win1, win2, win3, win4, win5, win6, win7, win8;
+let win1, win2, win3, win4, win5, win6, win7, win8, win9;
 
 function createWindows() {
   win1 = new BrowserWindow({
@@ -78,6 +78,7 @@ function createWindows() {
       preload: path.join(__dirname, '../preload/preload6.js'),
       contextIsolation: true,
       nodeIntegration: false,
+      backgroundThrottling: false,
     },
   });
   win6.loadFile(path.join(__dirname, '../renderer/window6/index.html'));
@@ -107,10 +108,23 @@ function createWindows() {
     },
   });
   win8.loadFile(path.join(__dirname, '../renderer/window8/index.html'));
+
+  win9 = new BrowserWindow({
+    width: 300,
+    height: 420,
+    frame: false,
+    show: false,
+    webPreferences: {
+      preload: path.join(__dirname, '../preload/preload9.js'),
+      contextIsolation: true,
+      nodeIntegration: false,
+    },
+  });
+  win9.loadFile(path.join(__dirname, '../renderer/window9/index.html'));
 }
 
 function getWindows() {
-  return { win1, win2, win3, win4, win5, win6, win7, win8 };
+  return { win1, win2, win3, win4, win5, win6, win7, win8, win9 };
 }
 
 module.exports = { createWindows, getWindows };

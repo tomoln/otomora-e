@@ -9,27 +9,28 @@ Electronアプリ。`npm start` で起動。win1のみ最初に表示。
 | win1 | メイン画面・D&Dドロップ受信・閉じるとアプリ終了 | あり |
 | win2 | assets/audio・assets/json のファイル一覧・ドラッグ元 | なし |
 | win3 | ログコンソール（成功=緑/失敗=赤、追記式） | なし |
-| win4 | JSON可視化（縦書き・word=accent色/mora=text色・等間隔アニメ・フォント選択） | なし |
+| win4 | JSON可視化（縦書き・word=accent色/mora=text色・等間隔アニメ） | なし |
 | win5 | 96マスグリッド(16列×6行)・モーラ表示・BPM連動点灯・Standard/Groupモード | なし |
 | win6 | BPMメーター(デフォ120)・16stepシーケンサー・スウィング・Tempo/Handモード | なし |
 | win7 | カラーパレット選択（10種）・全ウィンドウに一括適用 | なし |
 | win8 | モーラフロー（縦書き390スロット・BPM連動書き込み・単語accent表示） | なし |
+| win9 | フォントセレクター（5種）・全ウィンドウに一括適用 | なし |
 
-win2〜7はView menuで表示/非表示切り替え（起動時は非表示）。
-win2〜7はframeless、bodyに `-webkit-app-region: drag` でドラッグ移動可。
+win2〜9はView menuで表示/非表示切り替え（起動時は非表示）。
+win2〜9はframeless、bodyに `-webkit-app-region: drag` でドラッグ移動可。
 
 ## フォルダ構成
 ```
 src/
   main/
-    windowManager.js   # BrowserWindow生成・管理（win1〜7）
+    windowManager.js   # BrowserWindow生成・管理（win1〜9）
     ipcHandlers.js     # ipc中継・JSONロード・グリッド生成・パレットbroadcast
     logger.js          # win3へログ送信
     menuBuilder.js     # Viewメニュー（win2〜7）
   preload/
-    preload1〜8.js     # contextBridgeでapi公開
+    preload1〜9.js     # contextBridgeでapi公開
   renderer/
-    window1〜8/
+    window1〜9/
       index.html
       renderer.js
 assets/
@@ -66,7 +67,7 @@ assets/
 - **Standardカーソルはモードに関わらず毎tickバックグラウンドで進め続ける**（GroupモードからStandardに戻っても拍頭がずれない）
 
 ## win6 BPM/スウィング/モード
-- 16stepをsetTimeoutで再帰ループ
+- 16stepをsetTimeoutで再帰ループ（`backgroundThrottling: false` でバックグラウンド時も精度維持）
 - スウィング: 表拍=`pair×swing%`、裏拍=`pair×(1-swing%)`
 - PLAY/STOP時にipc(`bpm-tick`/`bpm-stop`)→main→win5へ転送
 
@@ -79,7 +80,7 @@ assets/
 - BPM/Swingスライダーは無効化
 
 ## カラーパレット（win7）
-win7でパレット選択 → ipc `apply-palette` → main → win1〜6へbroadcast → 各ウィンドウのCSS変数を更新。
+win7でパレット選択 → ipc `apply-palette` → main → win1〜6・win8・win9へbroadcast → 各ウィンドウのCSS変数を更新。
 
 ### CSS変数（全ウィンドウ共通）
 `--bg` / `--bg2` / `--bg3` / `--text` / `--text-dim` / `--accent` / `--accent2` / `--border` / `--success` / `--error`
@@ -91,12 +92,18 @@ Dark Mono / Midnight Blue / Forest / Amber / Retro CRT / Neon Cyber / Arctic / S
 
 起動時はwin7のrenderer.jsが `sendPalette(PALETTES[0])` を自動送信（Dark Monoが適用される）。
 
+## フォント（win9）
+win9でフォント選択 → ipc `apply-font` → main → win1〜8へbroadcast → 各ウィンドウの `document.body.style.fontFamily` を更新。
+起動時は DotGothic16 を自動送信。
+使用フォント（Google Fonts）: DotGothic16 / M PLUS 1 Code / Noto Sans JP / Zen Kaku Gothic New / Dela Gothic One
+win4の独立フォントセレクターは廃止済み。全ウィンドウの index.html に Google Fonts リンクを追加済み。
+
 ## win4アニメ設定
 `src/renderer/window4/renderer.js` 4行目の `INTERVAL_MS` で速度調整（ms）。
 
-## Google Fonts（win4）
+## Google Fonts
 DotGothic16 / M PLUS 1 Code / Noto Sans JP / Zen Kaku Gothic New / Dela Gothic One
-ネット接続必要。フォントはwin4メニューのselectで切り替え。カラーピッカーは廃止（パレット連動）。
+ネット接続必要。フォントはwin9で一括切り替え（win4の独立セレクターは廃止）。
 
 ## win8 Flowモーラ表示
 - 縦書き26列×15行=390スロットに、BPM tickごとに1モーラ順次書き込み

@@ -24,27 +24,6 @@
       flex-direction: column;
       -webkit-app-region: drag;
     }
-    #menu {
-      display: flex;
-      align-items: center;
-      gap: 16px;
-      padding: 8px 12px;
-      background: var(--bg2);
-      border-bottom: 1px solid var(--border);
-      flex-shrink: 0;
-      font-size: 0.82rem;
-      color: var(--text-dim);
-    }
-    #menu label { display: flex; align-items: center; gap: 6px; }
-    #menu select {
-      background: var(--bg3);
-      color: var(--text);
-      border: 1px solid var(--border);
-      border-radius: 4px;
-      padding: 2px 6px;
-      font-size: 0.82rem;
-      -webkit-app-region: no-drag;
-    }
     #stage { -webkit-app-region: no-drag; }
     #stage {
       writing-mode: vertical-rl;
@@ -68,18 +47,6 @@
   </style>
 </head>
 <body>
-  <div id="menu">
-    <label>
-      フォント:
-      <select id="font-select">
-        <option value="'DotGothic16', monospace">DotGothic16（ドット）</option>
-        <option value="'M PLUS 1 Code', monospace">M PLUS 1 Code（等幅）</option>
-        <option value="'Noto Sans JP', sans-serif">Noto Sans JP（標準）</option>
-        <option value="'Zen Kaku Gothic New', sans-serif">Zen Kaku Gothic New（スクエア）</option>
-        <option value="'Dela Gothic One', sans-serif">Dela Gothic One（太字）</option>
-      </select>
-    </label>
-  </div>
   <div id="stage"></div>
   <script src="renderer.js"></script>
 </body>
