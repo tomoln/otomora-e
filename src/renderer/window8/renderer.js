@@ -1,5 +1,39 @@
 const SLOT_SIZE = 36;
-const WORD_FONT_SIZE = 40;
+const WORD_FONT_SIZE = 64;   // wordフォントサイズ(px)
+// word背景ブロックの設定（後からコード上で変更可）
+const WORD_BLOCK_W = 220;    // ブロック幅(px)
+const WORD_BLOCK_H = 90;     // ブロック高さ(px)
+const WORD_BLOCK_X = 30;     // ブロック左端座標(px)
+const WORD_BLOCK_Y = 30;     // ブロック上端座標(px)
+const WORD_TEXT_COLOR = 'var(--accent)';  // wordテキスト色
+const WORD_BG_COLOR   = 'var(--bg2)';    // word背景ブロック色
+
+// rmsの想定範囲（この範囲でフォントサイズが最小〜最大にマッピングされる）
+const RMS_MIN = 0;    // この値以下 → 最小フォントサイズ
+const RMS_MAX = 0.4;  // この値以上 → 最大フォントサイズ
+// フォントサイズの範囲
+const FONT_MIN = 12;  // px
+const FONT_MAX = 48;  // px
+
+// f0の想定範囲（この範囲でノイズ密度が最小〜最大にマッピングされる）
+const F0_MIN = 50;    // Hz以下 → ノイズなし（無声音=0はスキップ）
+const F0_MAX = 300;   // Hz以上 → ノイズ最大
+// ノイズブロックのサイズ範囲
+const NOISE_BLOCK_MIN = 3;  // px
+const NOISE_BLOCK_MAX = 46;  // px
+// ノイズの最大ブロック数/スロット
+const NOISE_COUNT_MAX = 3;
+// spectral_centroidによるアニメーション速度範囲（FPS）
+const SC_FPS_MIN = 1;    // SC低い → 遅い（fps）
+const SC_FPS_MAX = 30;   // SC高い → 速い（fps）
+const SC_SPEED_MIN = 11000;  // Hz以下 → FPS最小
+const SC_SPEED_MAX = 30000; // Hz以上 → FPS最大
+// ノイズアニメーションの持続時間（この時間を過ぎると凍結）
+const NOISE_ANIM_DURATION = 2000; // ms
+// ノイズの透明度（0.0=完全透明 〜 1.0=完全不透明）
+const NOISE_ALPHA = 1.0;
+// ノイズの合成モード: 'source-over'=重なるだけ / 'lighter'=加算発光 / 'screen'=穏やか発光 / 'multiply'=暗くなる / 'overlay'=明暗強調
+const NOISE_BLEND = 'source-over';
 // 推奨ウィンドウサイズ(16:9)基準でスロット数を固定
 const COLS = Math.floor(960 / SLOT_SIZE); // 26列
 const ROWS = Math.floor(540 / SLOT_SIZE); // 15行
@@ -7,6 +41,13 @@ const TOTAL_SLOTS = COLS * ROWS;          // 390スロット
 
 const moraLayer  = document.getElementById('mora-layer');
 const wordDisplay = document.getElementById('word-display');
+
+// word表示の初期スタイルを定数で適用
+wordDisplay.style.left     = WORD_BLOCK_X + 'px';
+wordDisplay.style.top      = WORD_BLOCK_Y + 'px';
+wordDisplay.style.width    = WORD_BLOCK_W + 'px';
+wordDisplay.style.height   = WORD_BLOCK_H + 'px';
+wordDisplay.style.fontSize = WORD_FONT_SIZE + 'px';
 
 // スロットをあらかじめ全生成（vertical-rlで右上→下→左へ流れる）
 const slots = [];
@@ -17,45 +58,51 @@ for (let i = 0; i < TOTAL_SLOTS; i++) {
   slots.push(span);
 }
 
-let moraSequence = []; // [{ moraText, wordText }]
-let moraSeqCursor = 0;
+const GRID_SIZE = 96;
+let gridData = Array.from({ length: GRID_SIZE }, () => ({ mora: '', word: '', rms: 0, f0: 0, sc: 0 }));
 let slotCursor = 0;
 let currentWord = null;
+const noiseSlots = new Array(TOTAL_SLOTS).fill(0);    // 各スロットのf0値（密度用）
+const scSlots = new Array(TOTAL_SLOTS).fill(0);       // 各スロットのSC値（速度用）
+const lastDrawTimes = new Array(TOTAL_SLOTS).fill(0); // 各スロットの最終描画時刻
+const writeTimes = new Array(TOTAL_SLOTS).fill(-Infinity); // スロットに書き込まれた時刻
 
-window.api.onJsonData((jsonData) => {
-  moraSequence = [];
-  for (const wordEntry of jsonData) {
-    for (const mora of wordEntry.moras) {
-      if (mora.grid_count === 0) continue;
-      moraSequence.push({ moraText: mora.text, wordText: wordEntry.word });
-    }
-  }
-  moraSeqCursor = 0;
+window.api.onGridData((data) => {
+  gridData = data;
   // slotCursorはリセットしない（画面の続きから上書き）
 });
 
-window.api.onTick(() => {
-  if (moraSequence.length === 0) return;
+window.api.onCursor((index) => {
+  const cell = gridData[index];
 
-  const { moraText, wordText } = moraSequence[moraSeqCursor];
-  moraSeqCursor = (moraSeqCursor + 1) % moraSequence.length;
+  // 空白セルはスキップ
+  if (!cell || !cell.mora) return;
+
+  const { mora: moraText, word: wordText, rms, f0, sc } = cell;
+
+  // rmsをフォントサイズにマッピング
+  const t = Math.max(0, Math.min(1, (rms - RMS_MIN) / (RMS_MAX - RMS_MIN)));
+  const fontSize = Math.round(FONT_MIN + t * (FONT_MAX - FONT_MIN));
 
   // モーラをスロットに書き込み
   slots[slotCursor].textContent = moraText;
+  slots[slotCursor].style.fontSize = fontSize + 'px';
   offSlots[slotCursor] = moraText;
+  noiseSlots[slotCursor] = f0;
+  scSlots[slotCursor] = sc;
+  writeTimes[slotCursor] = performance.now();
+  // 書き込み時にそのスロット領域をクリアして新しいアニメーション開始
+  const _col = Math.floor(slotCursor / ROWS);
+  const _row = slotCursor % ROWS;
+  noiseCtx.clearRect(noiseCanvas.width - (_col + 1) * SLOT_SIZE, _row * SLOT_SIZE, SLOT_SIZE, SLOT_SIZE);
   slotCursor = (slotCursor + 1) % TOTAL_SLOTS;
 
-  // 単語が変わったらランダム位置に移動
+  // 単語が変わったら中央に表示
   if (wordText !== currentWord) {
     currentWord = wordText;
     wordDisplay.textContent = wordText;
-    const estWidth = wordText.length * WORD_FONT_SIZE;
-    const maxX = Math.max(0, 960 - estWidth - 10);
-    const maxY = Math.max(0, 540 - WORD_FONT_SIZE - 10);
-    offWordX = Math.floor(Math.random() * maxX);
-    offWordY = Math.floor(Math.random() * maxY);
-    wordDisplay.style.left = offWordX + 'px';
-    wordDisplay.style.top  = offWordY + 'px';
+    wordDisplay.style.color = WORD_TEXT_COLOR;
+    wordDisplay.style.background = WORD_BG_COLOR;
     offWordText = wordText;
   }
 
@@ -66,7 +113,65 @@ window.api.onStop(() => {
   // カーソル位置は保持（続きから再生できるよう）
 });
 
+// ============================================================
+// ブロックノイズ描画（noise-canvas）
+// ============================================================
+const noiseCanvas = document.getElementById('noise-canvas');
+const noiseCtx = noiseCanvas.getContext('2d');
+
+function resizeCanvas() {
+  noiseCanvas.width  = window.innerWidth;
+  noiseCanvas.height = window.innerHeight;
+}
+resizeCanvas();
+window.addEventListener('resize', resizeCanvas);
+
+// パレット色を保持（applyPaletteで更新）
+let paletteColors = ['#44aaff', '#ffff44', '#44ff44', '#ff5555'];
+
+function drawNoise(timestamp) {
+  for (let i = 0; i < TOTAL_SLOTS; i++) {
+    const f0 = noiseSlots[i];
+    if (f0 <= F0_MIN) continue;
+
+    // アニメーション期間を過ぎたスロットは凍結（描画しない）
+    if (performance.now() - writeTimes[i] > NOISE_ANIM_DURATION) continue;
+
+    // スロットごとのSCからFPSを計算し、描画タイミングを制御
+    const sc = scSlots[i];
+    const tSpeed = Math.min(1, Math.max(0, (sc - SC_SPEED_MIN) / (SC_SPEED_MAX - SC_SPEED_MIN)));
+    const fps = SC_FPS_MIN + tSpeed * (SC_FPS_MAX - SC_FPS_MIN);
+    if (timestamp - lastDrawTimes[i] < 1000 / fps) continue;
+    lastDrawTimes[i] = timestamp;
+
+    // アクティブなスロットのみクリアして再描画
+    const col = Math.floor(i / ROWS);
+    const row = i % ROWS;
+    const slotX = noiseCanvas.width - (col + 1) * SLOT_SIZE;
+    const slotY = row * SLOT_SIZE;
+    noiseCtx.clearRect(slotX, slotY, SLOT_SIZE, SLOT_SIZE);
+
+    const t = Math.min(1, (f0 - F0_MIN) / (F0_MAX - F0_MIN));
+    const count = Math.round(t * NOISE_COUNT_MAX);
+    for (let b = 0; b < count; b++) {
+      const bw = NOISE_BLOCK_MIN + Math.random() * (NOISE_BLOCK_MAX - NOISE_BLOCK_MIN);
+      const bh = NOISE_BLOCK_MIN + Math.random() * (NOISE_BLOCK_MAX - NOISE_BLOCK_MIN);
+      const bx = slotX + Math.random() * (SLOT_SIZE - bw);
+      const by = slotY + Math.random() * (SLOT_SIZE - bh);
+      const color = paletteColors[Math.floor(Math.random() * paletteColors.length)];
+      noiseCtx.globalCompositeOperation = NOISE_BLEND;
+      noiseCtx.globalAlpha = NOISE_ALPHA;
+      noiseCtx.fillStyle = color;
+      noiseCtx.fillRect(bx, by, bw, bh);
+    }
+  }
+  noiseCtx.globalAlpha = 1;
+  requestAnimationFrame(drawNoise);
+}
+requestAnimationFrame(drawNoise);
+
 function applyPalette(p) {
+  paletteColors = [p.accent, p.accent2, p.success, p.error];
   const r = document.documentElement;
   r.style.setProperty('--bg', p.bg);
   r.style.setProperty('--bg2', p.bg2);
@@ -80,6 +185,8 @@ function applyPalette(p) {
   r.style.setProperty('--error', p.error);
 }
 window.api.onPalette(applyPalette);
+// 起動時：mainにキャッシュされたパレットを取得して適用
+window.api.getPalette().then(p => { if (p) applyPalette(p); });
 window.api.onFont((font) => { document.body.style.fontFamily = font; });
 
 // ============================================================

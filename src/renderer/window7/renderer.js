@@ -1,24 +1,24 @@
 const PALETTES = [
   {
-    name: 'Dark Mono',
-    bg: '#111111', bg2: '#1a1a1a', bg3: '#2a2a2a',
-    text: '#cccccc', textDim: '#888888',
-    accent: '#44aaff', accent2: '#ffff44',
-    border: '#333333', success: '#44ff44', error: '#ff5555',
+    name: 'Paper',
+    bg: '#faf7f2', bg2: '#f0ebe2', bg3: '#e5ddd2',
+    text: '#2d1a0e', textDim: '#8a7060',
+    accent: '#c85020', accent2: '#2a7aaa',
+    border: '#d8cec4', success: '#4a8a3a', error: '#c03030',
   },
   {
-    name: 'Midnight Blue',
-    bg: '#0a0e1a', bg2: '#111827', bg3: '#1e2a3a',
-    text: '#c8d8f0', textDim: '#5a7090',
-    accent: '#6096ff', accent2: '#ffd060',
-    border: '#1e3050', success: '#40c080', error: '#ff5060',
+    name: 'Sky',
+    bg: '#edf4fb', bg2: '#ddeaf6', bg3: '#ccddf0',
+    text: '#0a1e30', textDim: '#507090',
+    accent: '#1868c0', accent2: '#e05820',
+    border: '#b0cce8', success: '#2a9050', error: '#d04040',
   },
   {
-    name: 'Forest',
-    bg: '#0a1a0e', bg2: '#0f2214', bg3: '#1a3020',
-    text: '#b0d4b8', textDim: '#507050',
-    accent: '#50d080', accent2: '#f0c040',
-    border: '#1a4020', success: '#60e060', error: '#f05050',
+    name: 'Lavender',
+    bg: '#f4f0fa', bg2: '#ebe4f6', bg3: '#ddd4f0',
+    text: '#1a1028', textDim: '#706088',
+    accent: '#6830c8', accent2: '#e05878',
+    border: '#c8b8e8', success: '#409860', error: '#c04060',
   },
   {
     name: 'Amber',
@@ -35,39 +35,39 @@ const PALETTES = [
     border: '#004000', success: '#60ff60', error: '#ff4040',
   },
   {
-    name: 'Neon Cyber',
-    bg: '#08000f', bg2: '#10001a', bg3: '#180028',
-    text: '#e0b0ff', textDim: '#6030a0',
-    accent: '#c060ff', accent2: '#ff40a0',
-    border: '#300060', success: '#40ff80', error: '#ff3060',
+    name: 'Ivory',
+    bg: '#fdfde8', bg2: '#f6f6d8', bg3: '#eeeec8',
+    text: '#1e1e04', textDim: '#787860',
+    accent: '#5a7800', accent2: '#c04800',
+    border: '#d8d8a8', success: '#3a8030', error: '#c02820',
   },
   {
-    name: 'Arctic',
-    bg: '#0a1820', bg2: '#0e2030', bg3: '#143040',
-    text: '#b0d8e8', textDim: '#405870',
-    accent: '#60c8e8', accent2: '#f08040',
-    border: '#1a4060', success: '#40d890', error: '#f05060',
+    name: 'Mint',
+    bg: '#eef9f4', bg2: '#ddf2e8', bg3: '#cceadc',
+    text: '#061e12', textDim: '#407858',
+    accent: '#107858', accent2: '#d07010',
+    border: '#a0d8bc', success: '#208840', error: '#c84040',
   },
   {
-    name: 'Sakura',
-    bg: '#180a10', bg2: '#221018', bg3: '#301828',
-    text: '#f0c0d0', textDim: '#705060',
-    accent: '#f080a0', accent2: '#f0d040',
-    border: '#402030', success: '#80d060', error: '#f04060',
+    name: 'Blush',
+    bg: '#fdf0f4', bg2: '#f8e2ec', bg3: '#f0d0e2',
+    text: '#280a18', textDim: '#906070',
+    accent: '#c01858', accent2: '#3878c0',
+    border: '#e0b0cc', success: '#488840', error: '#c02848',
   },
   {
-    name: 'Solar',
-    bg: '#1a1000', bg2: '#221800', bg3: '#302400',
-    text: '#f0d090', textDim: '#806030',
-    accent: '#f0a020', accent2: '#60d0f0',
-    border: '#402000', success: '#60d040', error: '#f04030',
+    name: 'Concrete',
+    bg: '#f0eeec', bg2: '#e4e2de', bg3: '#d8d4d0',
+    text: '#18140e', textDim: '#706860',
+    accent: '#304898', accent2: '#983018',
+    border: '#c4c0bc', success: '#387830', error: '#a02820',
   },
   {
-    name: 'Monochrome',
-    bg: '#0a0a0a', bg2: '#141414', bg3: '#222222',
-    text: '#d0d0d0', textDim: '#505050',
-    accent: '#aaaaaa', accent2: '#ffffff',
-    border: '#2a2a2a', success: '#a0a0a0', error: '#808080',
+    name: 'Dusk',
+    bg: '#4a4058', bg2: '#3e3450', bg3: '#322848',
+    text: '#e8e0f8', textDim: '#9080b8',
+    accent: '#c878ff', accent2: '#ff8848',
+    border: '#6858a0', success: '#58d080', error: '#ff5068',
   },
 ];
 
@@ -99,6 +99,7 @@ function renderList() {
       selectedIndex = i;
       renderList();
       window.api.sendPalette(p);
+      localStorage.setItem('palette', JSON.stringify(p));
     });
 
     list.appendChild(item);
@@ -106,6 +107,13 @@ function renderList() {
 }
 
 renderList();
-// 起動時にデフォルトパレットを適用
-window.api.sendPalette(PALETTES[0]);
+// 起動時：保存済みパレットがあればそれを使う、なければデフォルト
+const savedPalette = localStorage.getItem('palette');
+const initialPalette = savedPalette ? JSON.parse(savedPalette) : PALETTES[0];
+if (savedPalette) {
+  selectedIndex = PALETTES.findIndex(p => p.name === initialPalette.name);
+  if (selectedIndex === -1) selectedIndex = 0;
+  renderList();
+}
+window.api.sendPalette(initialPalette);
 window.api.onFont((font) => { document.body.style.fontFamily = font; });

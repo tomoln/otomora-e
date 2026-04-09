@@ -110,3 +110,40 @@ DotGothic16 / M PLUS 1 Code / Noto Sans JP / Zen Kaku Gothic New / Dela Gothic O
 - スロットカーソルはリセットなし（json更新後も続きから上書き）
 - 単語が切り替わるたびにword-displayがランダム座標へ移動（accent色・mix-blend-mode: screen）
 - grid_count=0スキップ
+- 起動時にmainキャッシュからパレットを取得して適用（`get-palette` IPC）
+
+### win8 rmsフォントサイズ
+- moraのrmsに応じてフォントサイズを変化（FONT_MIN〜FONT_MAX px）
+- rmsをRMS_MIN〜RMS_MAXの範囲で正規化
+- 調整定数（renderer.js先頭）: `RMS_MIN=0` / `RMS_MAX=0.4` / `FONT_MIN=12` / `FONT_MAX=48`
+
+### win8 ブロックノイズ（noise-canvas）
+- 文字の後ろにnoise-canvasレイヤー（z-index:0、mora-layerはz-index:1）
+- **ノイズ密度**: f0が高いほどブロック数増加（F0_MIN以下はスキップ・無声音除外）
+- **アニメーション速度**: スロットごとにspectral_centroidから計算（SC高い→速い）
+- **凍結**: 書き込みからNOISE_ANIM_DURATION ms後にそのスロットのノイズが静止
+- ノイズ色: パレットのaccent / accent2 / success / error からランダム選択
+- 調整定数（renderer.js先頭）:
+  - `F0_MIN=50` / `F0_MAX=300`（密度の入力範囲 Hz）
+  - `NOISE_BLOCK_MIN=3` / `NOISE_BLOCK_MAX=46`（ブロックサイズ px）
+  - `NOISE_COUNT_MAX=3`（1スロットの最大ブロック数）
+  - `SC_FPS_MIN=1` / `SC_FPS_MAX=30`（速度範囲 fps）
+  - `SC_SPEED_MIN=11000` / `SC_SPEED_MAX=30000`（速度の入力範囲 Hz）
+  - `NOISE_ANIM_DURATION=2000`（凍結までの時間 ms）
+  - `NOISE_ALPHA=1.0`（透明度）
+  - `NOISE_BLEND='source-over'`（合成モード: source-over/lighter/screen/multiply/overlay）
+
+## win7 カラーパレット（10種）
+Paper / Sky / Lavender / Amber / Retro CRT / Ivory / Mint / Blush / Concrete / Dusk
+- 背景が暗い（黒系）のはAmber・Retro CRTのみ、他は白・淡色系
+- 選択したパレットはlocalStorageに保存され次回起動時も維持
+
+## パレット永続化
+- win7: 選択時に`localStorage.setItem('palette', JSON.stringify(p))`
+- win9: 選択時に`localStorage.setItem('font', f.value)`
+- 起動時にlocalStorageから読み出し、なければデフォルト（Dark Mono / DotGothic16）
+
+## mainプロセスのパレットキャッシュ
+- `ipcHandlers.js`の`currentPalette`変数に最後のパレットをキャッシュ
+- `get-palette` IPCハンドラで取得可能
+- win8が起動時に呼び出して初期パレットを適用

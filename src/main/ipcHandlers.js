@@ -6,6 +6,8 @@ const { getWindows } = require('./windowManager');
 
 const ASSETS_PATH = path.join(__dirname, '../../assets');
 
+let currentPalette = null;
+
 function registerHandlers() {
   ipcMain.handle('get-assets', () => {
     const subfolders = ['audio', 'json'];
@@ -52,18 +54,27 @@ function registerHandlers() {
 
         // win5用: 96マスのグリッドデータを生成
         const GRID_SIZE = 96;
-        const grid = Array(GRID_SIZE).fill('');
+        const grid = Array.from({ length: GRID_SIZE }, () => ({ mora: '', word: '', rms: 0, f0: 0, sc: 0 }));
         let cursor = 0;
         outer: for (const wordEntry of jsonData) {
           for (const mora of wordEntry.moras) {
             if (cursor >= GRID_SIZE) break outer;
             if (mora.grid_count === 0) continue;
-            grid[cursor] = mora.text;
-            cursor += mora.grid_count; // grid_count=2なら次のマスは空白のまま
+            grid[cursor] = {
+              mora: mora.text,
+              word: wordEntry.word,
+              rms: mora.rms ?? 0,
+              f0: mora.f0 ?? 0,
+              sc: mora.spectral_centroid ?? 0,
+            };
+            cursor += mora.grid_count;
           }
         }
         if (win5 && !win5.isDestroyed()) {
           win5.webContents.send('grid-data', grid);
+        }
+        if (win8 && !win8.isDestroyed()) {
+          win8.webContents.send('grid-data', grid);
         }
 
         log(`JSON OK: ${baseName}.json`, 'success');
@@ -90,6 +101,11 @@ function registerHandlers() {
     }
   });
 
+  ipcMain.on('grid-cursor', (_event, index) => {
+    const { win8 } = getWindows();
+    if (win8 && !win8.isDestroyed()) win8.webContents.send('grid-cursor', index);
+  });
+
   ipcMain.on('bpm-tick', () => {
     const { win5, win8 } = getWindows();
     if (win5 && !win5.isDestroyed()) win5.webContents.send('bpm-tick');
@@ -102,7 +118,10 @@ function registerHandlers() {
     if (win8 && !win8.isDestroyed()) win8.webContents.send('bpm-stop');
   });
 
+  ipcMain.handle('get-palette', () => currentPalette);
+
   ipcMain.on('apply-palette', (_event, palette) => {
+    currentPalette = palette;
     const { win1, win2, win3, win4, win5, win6, win8, win9 } = getWindows();
     for (const win of [win1, win2, win3, win4, win5, win6, win8, win9]) {
       if (win && !win.isDestroyed()) win.webContents.send('apply-palette', palette);

@@ -1,8 +1,3 @@
-
-git init
-git add .
-git commit -m "initial commit"
-=======
 アプリの実行
 npm start
 

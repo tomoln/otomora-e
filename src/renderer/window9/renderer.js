@@ -30,6 +30,7 @@ function renderList() {
       selectedIndex = i;
       renderList();
       window.api.sendFont(f.value);
+      localStorage.setItem('font', f.value);
     });
 
     list.appendChild(item);
@@ -37,8 +38,14 @@ function renderList() {
 }
 
 renderList();
-// 起動時にデフォルトフォントを適用
-window.api.sendFont(FONTS[0].value);
+// 起動時：保存済みフォントがあればそれを使う、なければデフォルト
+const savedFont = localStorage.getItem('font');
+if (savedFont) {
+  selectedIndex = FONTS.findIndex(f => f.value === savedFont);
+  if (selectedIndex === -1) selectedIndex = 0;
+  renderList();
+}
+window.api.sendFont(savedFont ?? FONTS[0].value);
 
 function applyPalette(p) {
   const r = document.documentElement;

@@ -12,8 +12,10 @@ const gridEl = document.getElementById('grid');
 const btnStandard = document.getElementById('btn-standard');
 const btnGroup = document.getElementById('btn-group');
 const rerollBtn = document.getElementById('reroll-btn');
+const wordDisplay = document.getElementById('word-display');
 
 let cellEls = [];
+let cellWords = []; // 各セルに対応するword
 let groupMode = false;
 let groups = [];
 let currentGroupIndex = 0;
@@ -26,15 +28,20 @@ let groupCursor = -1;
 function buildGrid(cells) {
   gridEl.innerHTML = '';
   cellEls = [];
+  cellWords = [];
   standardCursor = -1;
   groupCursor = -1;
-  cells.forEach((text) => {
+  cells.forEach((item) => {
+    const mora = typeof item === 'object' ? item.mora : item;
+    const word = typeof item === 'object' ? item.word : '';
     const cell = document.createElement('div');
-    cell.className = text !== '' ? 'cell filled' : 'cell blank';
-    cell.textContent = text;
+    cell.className = mora !== '' ? 'cell filled' : 'cell blank';
+    cell.textContent = mora;
     gridEl.appendChild(cell);
     cellEls.push(cell);
+    cellWords.push(word);
   });
+  wordDisplay.textContent = '';
   if (groupMode) applyGroupColors();
 }
 
@@ -82,8 +89,12 @@ window.api.onTick(() => {
 
   if (groupMode) {
     groupTick();
+    wordDisplay.textContent = cellWords[groupCursor] || '';
+    window.api.sendCursor(groupCursor);
   } else {
     cellEls[standardCursor].classList.add('lit');
+    wordDisplay.textContent = cellWords[standardCursor] || '';
+    window.api.sendCursor(standardCursor);
   }
 });
 
@@ -91,6 +102,7 @@ window.api.onStop(() => {
   standardStop();
   standardCursor = -1;
   if (groupMode) groupStop();
+  wordDisplay.textContent = '';
 });
 
 // ----- グループ生成 -----
