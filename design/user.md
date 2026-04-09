@@ -4,14 +4,8 @@
 design/claude.md
 
 問題点
-win8はビジュアライザーです。
-win6からの文字を描写している。
-win6はwin1のインポートされたjsonを使っている
-そのjsonにはrms、f0、spectral_centroid、zcrが含まれる
-これらの値を描写に使用する。
-まずは、rmsから。
-rmsのサイズに応じて、文字のサイズを大きくする。
-この際、文字が被らないように描写する
+win5で、現在モーラごとに文字がグリッドに収まっています。
+これの下に、対応しているwordも表示させたいのです。
 
 やらない事
 依存関係的に関係のないファイルは読まない
@@ -41,3 +35,7 @@ src/main/menuBuilder.js の label を変えればOKです。
 42行目: 'Grid (win5)'
 52行目: 'BPM (win6)'
 62行目: 'Palette (win7)'
+
+win5からきている文字を描写している
+win8の文字データはjsonファイルのmorasから来ており、rms / f0 / spectral_centroid / zcr もすでにwin8に届いているデータ
+これを
