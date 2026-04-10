@@ -16,6 +16,26 @@ const wordDisplay = document.getElementById('word-display');
 
 let cellEls = [];
 let cellWords = []; // 各セルに対応するword
+let cellTimes = []; // 各セルに対応する { start, end }（秒）
+
+// ----- Web Audio -----
+const audioCtx = new AudioContext();
+let audioBuffer = null;
+let currentSource = null;
+
+window.api.onAudioReady(async (arrayBuffer) => {
+  audioBuffer = await audioCtx.decodeAudioData(arrayBuffer);
+});
+
+function playSlice(start, end) {
+  if (!audioBuffer || end <= start) return;
+  if (currentSource) { try { currentSource.stop(); } catch (_) {} }
+  const source = audioCtx.createBufferSource();
+  source.buffer = audioBuffer;
+  source.connect(audioCtx.destination);
+  source.start(0, start, end - start);
+  currentSource = source;
+}
 let groupMode = false;
 let groups = [];
 let currentGroupIndex = 0;
@@ -29,17 +49,21 @@ function buildGrid(cells) {
   gridEl.innerHTML = '';
   cellEls = [];
   cellWords = [];
+  cellTimes = [];
   standardCursor = -1;
   groupCursor = -1;
   cells.forEach((item) => {
     const mora = typeof item === 'object' ? item.mora : item;
     const word = typeof item === 'object' ? item.word : '';
+    const start = typeof item === 'object' ? (item.start ?? 0) : 0;
+    const end   = typeof item === 'object' ? (item.end   ?? 0) : 0;
     const cell = document.createElement('div');
     cell.className = mora !== '' ? 'cell filled' : 'cell blank';
     cell.textContent = mora;
     gridEl.appendChild(cell);
     cellEls.push(cell);
     cellWords.push(word);
+    cellTimes.push({ start, end });
   });
   wordDisplay.textContent = '';
   if (groupMode) applyGroupColors();
@@ -91,10 +115,14 @@ window.api.onTick(() => {
     groupTick();
     wordDisplay.textContent = cellWords[groupCursor] || '';
     window.api.sendCursor(groupCursor);
+    const t = cellTimes[groupCursor];
+    if (t) playSlice(t.start, t.end);
   } else {
     cellEls[standardCursor].classList.add('lit');
     wordDisplay.textContent = cellWords[standardCursor] || '';
     window.api.sendCursor(standardCursor);
+    const t = cellTimes[standardCursor];
+    if (t) playSlice(t.start, t.end);
   }
 });
 

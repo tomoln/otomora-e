@@ -66,12 +66,15 @@ function registerHandlers() {
               rms: mora.rms ?? 0,
               f0: mora.f0 ?? 0,
               sc: mora.spectral_centroid ?? 0,
+              start: mora.start ?? 0,
+              end: mora.end ?? 0,
             };
             cursor += mora.grid_count;
           }
         }
         if (win5 && !win5.isDestroyed()) {
           win5.webContents.send('grid-data', grid);
+          win5.webContents.send('audio-ready', content.buffer);
         }
         if (win8 && !win8.isDestroyed()) {
           win8.webContents.send('grid-data', grid);
